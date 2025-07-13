@@ -34,9 +34,17 @@ export default function FlowBuilder() {
         setNodes,
         onNodesChange: (changes: NodeChange<Node>[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
         onEdgesChange: (changes: EdgeChange<Edge>[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-        onConnect: (params: Connection) => 
-          setEdges((eds) =>
-            addEdge(
+        onConnect: (params: Connection) =>
+          setEdges((eds) => {
+            // Check if an edge already exists with same source & sourceHandle
+            const exists = eds.some(
+              (e) => e.source === params.source && e.sourceHandle === params.sourceHandle
+            );
+            if (exists) {
+              // Prevent adding new edge if one already exists from this source handle
+              return eds;
+            }
+            return addEdge(
               {
                 ...params,
                 markerEnd: {
@@ -46,8 +54,8 @@ export default function FlowBuilder() {
                 },
               },
               eds
-            )
-          ),
+            );
+          }),
       };
 
     return (
