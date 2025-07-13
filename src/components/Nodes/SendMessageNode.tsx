@@ -1,8 +1,15 @@
 import { Handle, Position } from "@xyflow/react";
 
-export default function SendMessageNode() {
+interface SendMessageNodeProps {
+    selected?: boolean;
+    data: {
+        message?: string
+    }
+}
+
+export default function SendMessageNode({selected = false,data} : SendMessageNodeProps) {
   return (
-    <div className="relative rounded-md shadow-2xl  w-xs bg-white ">
+    <div className={`relative rounded-md shadow-2xl  w-xs bg-white border-primary ${selected ? 'border' : ''}`}>
 
       {/* Left (Target) Handle */}
       <Handle
@@ -12,10 +19,11 @@ export default function SendMessageNode() {
         style={{
             top: '50%',
             transform: 'translateY(-50%)',
-            background: 'black',
-            width: '10px',
-            height: '10px',
-            left: '-4px'
+            background: 'grey',
+            width: '15px',
+            height: '15px',
+            left: '-7px',
+
         }}
       />
 
@@ -27,15 +35,15 @@ export default function SendMessageNode() {
         style={{
           top: '50%',
           transform: 'translateY(-50%)',
-          background: 'black',
-          width: '10px',
-          height: '10px',
-          right: '-4px'
+          background: 'grey',
+          width: '15px',
+          height: '15px',
+          right: '-7px'
         }}
       />
 
       <div className="bg-secondary font-semibold text-base p-3 rounded-md">Send Message</div>
-      <div className="min-h-10 p-3 break-words">Yooo</div>
+      <div className="min-h-10 p-3 break-words">{data.message}</div>
     </div>
   );
 }
