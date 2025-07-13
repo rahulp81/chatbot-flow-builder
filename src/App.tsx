@@ -1,11 +1,10 @@
 import './App.css'
+import FlowBuilder from './components/FlowBuilder'
 
 function App() {
 
   return (
-    <div className='text-red-400'>
-      Hello World
-    </div>
+    <FlowBuilder/>
   )
 }
 
