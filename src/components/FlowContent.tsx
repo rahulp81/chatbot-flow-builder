@@ -1,88 +1,101 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   ReactFlow,
   Controls,
   MiniMap,
-  Node,
-  Edge,
   useReactFlow,
+  useOnSelectionChange,
+  OnSelectionChangeParams,
+  NodeTypes,
   OnNodesChange,
   OnEdgesChange,
   OnConnect,
-  NodeTypes,
-  useOnSelectionChange,
-  OnSelectionChangeParams,
-} from '@xyflow/react';
+  Node,
+  Edge,
+} from "@xyflow/react";
 
-interface FlowContentProps {
-  nodes: Node[];
-  edges: Edge[];
-  onNodesChange: OnNodesChange;
-  onEdgesChange: OnEdgesChange;
-  onConnect: OnConnect;
-  setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
-  nodeTypes : NodeTypes
-}
-
-export default function FlowContent({
-  nodes,
-  edges,
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "@/store";
+import {
+  setNodes,
   onNodesChange,
   onEdgesChange,
   onConnect,
-  setNodes,
-  nodeTypes
-}: FlowContentProps) {
+  setSelectedNodes,
+} from "@/store/slices/flowSlice";
+
+interface FlowContentProps {
+  nodeTypes: NodeTypes;
+}
+
+export default function FlowContent({ nodeTypes }: FlowContentProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const nodes = useSelector((state: RootState) => state.flow.nodes);
+  const edges = useSelector((state: RootState) => state.flow.edges);
+
   const reactFlow = useReactFlow();
-  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-
-  const onChange = useCallback(({ nodes }: OnSelectionChangeParams) => {
-    setSelectedNodes(nodes.map(node => node.id));
-  }, []);
-
   useOnSelectionChange({
-    onChange,
+    onChange: ({ nodes }: OnSelectionChangeParams) => {
+      const ids = nodes.map((node) => node.id);
+      dispatch(setSelectedNodes(ids));
+    },
   });
+
+
+  const handleNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      dispatch(onNodesChange(changes));
+    },
+    [dispatch]
+  );
+
+  const handleEdgesChange: OnEdgesChange = useCallback(
+    (changes) => {
+      dispatch(onEdgesChange(changes));
+    },
+    [dispatch]
+  );
+
+  const handleConnect: OnConnect = useCallback(
+    (connection) => {
+      dispatch(onConnect(connection));
+    },
+    [dispatch]
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      const type = event.dataTransfer.getData('application/reactflow');
+
+      const type = event.dataTransfer.getData("application/reactflow");
       if (!type) return;
 
-      const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+      const bounds = event.currentTarget.getBoundingClientRect();
       const position = {
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
       };
-
-      const flowPos = reactFlow.screenToFlowPosition(position);
+      const flowPosition = reactFlow.screenToFlowPosition(position);
 
       const newId = `${type}-${Date.now()}`;
+      const newNode: Node = {
+        id: newId,
+        type,
+        position: flowPosition,
+        data: { message: `test message ${nodes.length + 1}` },
+        selected: true,
+      };
 
-      setNodes((prevNodes) => {
-        const newNode: Node = {
-          id: newId,
-          type,
-          position: flowPos,
-          data: {
-            message: `test message ${prevNodes.length + 1}`,
-          },
-          selected: true,
-        };
+      // Deselected old nodes, add then add new one with selected true
+      const updatedNodes = [
+        ...nodes.map((node) => ({ ...node, selected: false })),
+        newNode,
+      ];
 
-        const updatedNodes = prevNodes.map((node) => ({
-          ...node,
-          selected: false,
-        }));
-
-        return [...updatedNodes, newNode];
-      });
-
+      dispatch(setNodes(updatedNodes));
       setSelectedNodes([newId]);
-
     },
-    [reactFlow, setNodes]
+    [dispatch, nodes, reactFlow]
   );
 
   return (
@@ -90,9 +103,9 @@ export default function FlowContent({
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
+      onNodesChange={handleNodesChange}
+      onEdgesChange={handleEdgesChange}
+      onConnect={handleConnect}
       onDrop={onDrop}
       onDragOver={(event) => event.preventDefault()}
     >

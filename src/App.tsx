@@ -1,10 +1,14 @@
+import { Provider } from 'react-redux'
 import './App.css'
 import FlowBuilder from './components/FlowBuilder'
+import { store } from './store'
 
 function App() {
 
   return (
-    <FlowBuilder/>
+    <Provider store={store}>
+      <FlowBuilder/>
+    </Provider>
   )
 }
 
