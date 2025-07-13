@@ -21,7 +21,9 @@ interface FlowContentProps {
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
-  nodeTypes : NodeTypes
+  nodeTypes: NodeTypes;
+  selectedNodeId: string;
+  setSelectedNodeId: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function FlowContent({
@@ -31,13 +33,14 @@ export default function FlowContent({
   onEdgesChange,
   onConnect,
   setNodes,
-  nodeTypes
+  nodeTypes,
+  selectedNodeId,
+  setSelectedNodeId
 }: FlowContentProps) {
   const reactFlow = useReactFlow();
-  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
   const onChange = useCallback(({ nodes }: OnSelectionChangeParams) => {
-    setSelectedNodes(nodes.map(node => node.id));
+    setSelectedNodeId(nodes.map(node => node.id)[0]);
   }, []);
 
   useOnSelectionChange({
@@ -79,7 +82,7 @@ export default function FlowContent({
         return [...updatedNodes, newNode];
       });
 
-      setSelectedNodes([newId]);
+      setSelectedNodeId(newId);
 
     },
     [reactFlow, setNodes]

@@ -27,6 +27,7 @@ const initialEdges: Edge[] = [];
 
 export default function FlowBuilder() {
     const [nodes, setNodes] = useState(initialNodes);
+    const [selectedNodeId, setSelectedNodeId] = useState<string>('');
     const [edges, setEdges] = useState(initialEdges);
 
     const handlers = {
@@ -51,13 +52,25 @@ export default function FlowBuilder() {
 
     return (
       <div className="h-screen flex flex-col">
-        <HeaderSection />
+        <HeaderSection edges={edges} nodes={nodes} />
         <div className="flex grow">
             <ReactFlowProvider>
                 <div className="grow">
-                    <FlowContent nodeTypes={nodeTypes} nodes={nodes} edges={edges} {...handlers} />
+                <FlowContent
+                  nodeTypes={nodeTypes}
+                  nodes={nodes}
+                  edges={edges}
+                  selectedNodeId={selectedNodeId}
+                  setSelectedNodeId={setSelectedNodeId}
+                  {...handlers}
+                />
                 </div>
-                <ActionPanel />
+                <ActionPanel
+                  setSelectedId={setSelectedNodeId}
+                  selectedNodeId={selectedNodeId}
+                  nodes={nodes}
+                  setNodes={setNodes}
+                />
             </ReactFlowProvider>
         </div>
       </div>
